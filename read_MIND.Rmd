@@ -15,7 +15,6 @@ Load libraries:
 ```{r}
 library(tidyverse)
 library(reticulate)
-library(tidytext)
 ```
 
 Behavior files provide user impressions and click history:
