@@ -1,0 +1,71 @@
+---
+title: "News EDA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidytext)
+library(forcats)
+source("read_MIND.Rmd")
+```
+
+Plot count of news articles in each category. TODO: reorder by count
+
+```{r}
+news_train %>%
+  group_by(category) %>%
+  summarize(articles = n_distinct(news_id)) %>%
+  ggplot(aes(articles, category)) +
+  geom_col() +
+  labs(y = NULL) 
+```
+
+
+```{r}
+mind_words <- news_train %>%
+  select(news_id, category, subcategory, title) %>%
+  unnest_tokens(word, title) %>%
+  filter(!word %in% stop_words$word)
+```
+
+tf-idf by subcategory
+
+```{r}
+tf_idf_subcat <- mind_words %>%
+  count(category, subcategory, word, sort = TRUE) %>% # count of word in subcategory
+  ungroup() %>%
+  bind_tf_idf(word, subcategory, n) %>%               # tf_idf where subcategory is the doc
+  arrange(desc(tf_idf))
+```
+
+tf-idf by category:
+
+```{r}
+tf_idf_cat <- mind_words %>%
+  count(category, word, sort = TRUE) %>% # count of word in subcategory
+  ungroup() %>%
+  bind_tf_idf(word, category, n) %>%               # tf_idf where subcategory is the doc
+  arrange(desc(tf_idf))
+```
+
+Plot top words in titles (by tf-idf):
+
+```{r}
+tf_idf_cat %>%
+  #filter(category == "lifestyle") %>%
+  group_by(category) %>%
+  slice_max(tf_idf, n = 12) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, tf_idf)) %>%
+  ggplot(aes(tf_idf, word, fill = category)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ category, scales = "free") +
+  labs(x = "tf-idf", y = NULL) + 
+  ggtitle("MIND: Top Words in Titles (by Article Category)")
+```
+
+TODO: Finish examples here: https://www.tidytextmining.com/usenet.html#usenet

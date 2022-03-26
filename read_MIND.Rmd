@@ -1,7 +1,9 @@
 ---
-title: "MIND"
+title: "Read the MIND data"
 output: html_document
 ---
+
+## Setup
 
 See https://github.com/msnews/msnews.github.io/blob/master/assets/doc/introduction.md
 
@@ -17,6 +19,8 @@ library(tidyverse)
 library(reticulate)
 ```
 
+## Behavior
+
 Behavior files provide user impressions and click history:
 
 * Impression ID. The ID of an impression.
@@ -30,6 +34,8 @@ col_names <- c("impression_id", "user_id", "time", "history", "impressions")
 behaviors_train <- read_tsv(file = "/data/MINDsmall/train/behaviors.tsv", col_names = col_names)
 behaviors_val <- read_tsv(file = "/data/MINDsmall/val/behaviors.tsv", col_names = col_names)
 ```
+
+## News
 
 News files contain information about each news article:
 
@@ -53,11 +59,14 @@ news_val = pd.read_csv("/data/MINDsmall/val/news.tsv", sep="\t", header=None )
 ```{r}
 news_train <- py$news_train
 news_val <- py$news_val
-col_names <- c("news_id", "category", "subc-ategory", "title", "abstract", "url", "title_entities", "abstract_entities")
+col_names <- c("news_id", "category", "subcategory", "title", "abstract", "url", "title_entities", "abstract_entities")
 colnames(news_train) <- col_names
 colnames(news_val) <- col_names
 #View(news)
 ```
+
+
+## Embeddings
 
 Each record of the embedding files contains an id and a 100 dimensional embedding. Embeddings are provided for entities and relations learned from the subgraph (from WikiData knowledge graph).
 
