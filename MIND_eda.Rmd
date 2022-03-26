@@ -1,0 +1,55 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+See https://github.com/msnews/msnews.github.io/blob/master/assets/doc/introduction.md
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(reticulate)
+```
+
+```{r}
+behaviors_train <- read_tsv(file = "/data/MINDsmall/train/behaviors.tsv", col_names = c("impression_id", "user_id", "time", "history", "impressions"))
+behaviors_test <- read_tsv(file = "/data/MINDsmall/test/behaviors.tsv", col_names = c("impression_id", "user_id", "time", "history", "impressions"))
+```
+
+R's `read_tsv` had some trouble reading the news dataset, so we'll use python pandas.
+
+```{python}
+import pandas as pd
+news_train = pd.read_csv("/data/MINDsmall/train/news.tsv", sep="\t", header=None )
+news_test = pd.read_csv("/data/MINDsmall/test/news.tsv", sep="\t", header=None )
+```
+
+```{r}
+news_train <- py$news_train
+news_test <- py$news_test
+colnames(news_train) <- c("news_id", "category", "subc-ategory", "title", "abstract", "url", "title_entities", "abstract_entities")
+colnames(news_test) <- c("news_id", "category", "subc-ategory", "title", "abstract", "url", "title_entities", "abstract_entities")
+#View(news)
+```
+
+```{r}
+entity_embedding_train <- read_tsv(file = "/data/MINDsmall/train/entity_embedding.vec") %>% select(-X102)
+colnames(entity_embedding_train) <- c("id", sapply(1:100, function(x){sprintf("d%d",x)}))
+
+entity_embedding_test <- read_tsv(file = "/data/MINDsmall/test/entity_embedding.vec") %>% select(-X102)
+colnames(entity_embedding_test) <- c("id", sapply(1:100, function(x){sprintf("d%d",x)}))
+```
+
+```{r}
+relation_embedding_train <- read_tsv(file = "/data/MINDsmall/train/relation_embedding.vec")
+colnames(relation_embedding_train) <- c("id", sapply(1:100, function(x){sprintf("d%d",x)}))
+
+relation_embedding_test <- read_tsv(file = "/data/MINDsmall/test/relation_embedding.vec")
+colnames(relation_embedding_test) <- c("id", sapply(1:100, function(x){sprintf("d%d",x)}))
+```
+
