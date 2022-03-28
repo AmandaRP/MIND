@@ -1,0 +1,37 @@
+---
+title: "Behaviors EDA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+history <- behaviors_train %>%
+  select(user_id, time, history) %>%
+  separate_rows(history) %>%
+  rename(article = history) %>%
+  add_column(label = 1L) 
+  
+
+impressions <- behaviors_train %>%
+  select(user_id, time, impressions) %>%
+  separate_rows(impressions, sep = " ") %>%
+  separate(impressions, into = c("article", "label")) %>%
+  mutate(label = as.integer(label))
+```
+
+
+```{r}
+interactions <- bind_rows(history, impressions) %>%
+  mutate(time = mdy_hms(time)) %>%
+  #tail(100) %>%
+  group_by(user_id, article, label) %>%
+  slice_max(order_by = time) %>%          # Pick most recent for each label, user, article
+  ungroup() %>%
+  group_by(user_id, article) %>%
+  slice_max(order_by = label)             # Pick label=1 over label=0 for duplicated user-article pairs
+
+```
+
