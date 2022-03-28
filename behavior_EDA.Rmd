@@ -7,6 +7,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Load libraries
+
+```{r}
+library(tidyverse)
+library(arrow)
+```
+
+
+Obtain implicit positive and negative articles from `history` and `impressions` columns:
+
 ```{r}
 history <- behaviors_train %>%
   select(user_id, time, history) %>%
@@ -14,7 +24,6 @@ history <- behaviors_train %>%
   rename(article = history) %>%
   add_column(label = 1L) 
   
-
 impressions <- behaviors_train %>%
   select(user_id, time, impressions) %>%
   separate_rows(impressions, sep = " ") %>%
@@ -23,10 +32,17 @@ impressions <- behaviors_train %>%
 ```
 
 
+Goal: Obtain positive and negative article interactions for each user (positive if they clicked on the article, negative
+if the article appeared as an impression and they did not click on it.
+
+If a user-article pair appears twice in the data, we'll choose label=1 over label=0 (since they clicked on it at some point). Also, for duplicated user-article
+pairs with the same label, chose the most recent.
+
+Warning: The following is really slow! 
+
 ```{r}
 interactions <- bind_rows(history, impressions) %>%
   mutate(time = mdy_hms(time)) %>%
-  #tail(100) %>%
   group_by(user_id, article, label) %>%
   slice_max(order_by = time) %>%          # Pick most recent for each label, user, article
   ungroup() %>%
