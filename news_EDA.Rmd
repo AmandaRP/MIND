@@ -20,12 +20,14 @@ See https://www.tidytextmining.com/usenet.html#usenet for examples.
 Plot count of news articles in each category. TODO: reorder by count
 
 ```{r}
+library(forcats)
 news_train %>%
-  group_by(category) %>%
-  summarize(articles = n_distinct(news_id)) %>%
-  ggplot(aes(articles, category)) +
-  geom_col() +
-  labs(y = NULL) 
+  mutate(category = as.factor(category)) %>%
+  ggplot(aes(x = fct_infreq(category))) + 
+  geom_bar() +
+  coord_flip() +
+  labs(x = "Category")
+	
 ```
 Tokenize and remove stop words:
 
